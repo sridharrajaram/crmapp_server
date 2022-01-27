@@ -9,6 +9,7 @@ const ejs = require("ejs");
 
 const User = require("../models/User");
 const verifyToken = require("../middlewares/ForgetPassword/verifyToken");
+SERVER_URL="http://localhost:5000"
 
 const {
   registerValidation,
@@ -17,22 +18,14 @@ const {
   resetPasswordValidation,
 } = require("../validation");
 
-const CLIENT_ID = process.env.MAIL_CLIENT_ID;
-const CLIENT_SECRET = process.env.MAIL_CLIENT_SECRET;
-const REDIRECT_URL = process.env.MAIL_REDIRECT_URL;
-const REFRESH_TOKEN = process.env.MAIL_REFRESH_TOKEN;
-
-const oAuth2Client = new google.auth.OAuth2(
-  CLIENT_ID,
-  CLIENT_SECRET,
-  REDIRECT_URL
-);
-oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+const CLIENT_ID = process.env.OAUTH_CLIENT_ID;
+const CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET;
+const REDIRECT_URL = process.env.OAUTH_REDIRECT_URL;
+const REFRESH_TOKEN = process.env.OAUTH_REFRESH_TOKEN;
+const ACCESS_TOKEN = process.env.OAUTH_ACCESS_TOKEN;
 
 async function sendMail(receiverMail, data) {
   try {
-    const ACCESS_TOKEN = await oAuth2Client.getAccessToken();
-
     const transport = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -46,7 +39,7 @@ async function sendMail(receiverMail, data) {
     });
 
     const mailOptions = {
-      from: "CRM Application <mohitmdhule@gmail.com>",
+      from: process.env.MAIL_FROM,
       to: receiverMail,
       subject: "PASSWORD RESET LINK - CRM Application",
       html: data,
@@ -158,12 +151,10 @@ router.post("/forget-password", async (req, res) => {
           role: userMatch.role,
         },
         process.env.TOKEN_SECRET,
-        { expiresIn: "5m" }
+        { expiresIn: "10m" }
       );
 
-      const link =
-        process.env.SERVER_URL +
-        `/api/user/reset-password/${userMatch._id}/${token}`;
+      const link =`http://localhost:5000/api/auth/reset-password/${userMatch._id}/${token}`;
 
       const data = await ejs.renderFile(
         path.join(__dirname, "..", "views", "mail-template.ejs"),
@@ -173,6 +164,7 @@ router.post("/forget-password", async (req, res) => {
       );
 
       await sendMail(userMatch.email, data);
+
       res.send(
         "Password reset link has been sent to your email. Please check your mailbox."
       );
@@ -211,7 +203,7 @@ router.post("/reset-password/:id/:token", verifyToken, async (req, res) => {
       { password: hashPassword }
     );
     res.send(
-      "Your password has been changed successfully. Please login with your new password."
+      `Your password has been changed successfully. Please login with your new password`
     );
   } catch (err) {
     res.status(500).send("Something went wrong. Please try again");
