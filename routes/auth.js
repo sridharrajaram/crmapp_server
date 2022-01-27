@@ -9,7 +9,7 @@ const ejs = require("ejs");
 
 const User = require("../models/User");
 const verifyToken = require("../middlewares/ForgetPassword/verifyToken");
-SERVER_URL="http://localhost:5000"
+
 
 const {
   registerValidation,
@@ -154,7 +154,7 @@ router.post("/forget-password", async (req, res) => {
         { expiresIn: "10m" }
       );
 
-      const link =`http://localhost:5000/api/auth/reset-password/${userMatch._id}/${token}`;
+      const link =`https://sridharrajaram-crmapp.herokuapp.com/api/auth/reset-password/${userMatch._id}/${token}`;
 
       const data = await ejs.renderFile(
         path.join(__dirname, "..", "views", "mail-template.ejs"),
@@ -203,7 +203,7 @@ router.post("/reset-password/:id/:token", verifyToken, async (req, res) => {
       { password: hashPassword }
     );
     res.send(
-      `Your password has been changed successfully. Please login with your new password`
+      "Your password has been changed successfully. Please login with your new password"
     );
   } catch (err) {
     res.status(500).send("Something went wrong. Please try again");
