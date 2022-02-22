@@ -13,7 +13,8 @@ const statsRoute = require("./routes/stats");
 
 const PORT = process.env.PORT || 5000;
 const ORIGIN = process.env.ORIGIN;
-const DB_HOST = process.env.DB_HOST;
+//const DB_HOST = process.env.DB_HOST;
+const DB_HOST = "mongodb://localhost:27017/CRM";
 
 mongoose.connect(
   DB_HOST,
@@ -24,8 +25,7 @@ mongoose.connect(
 );
 
 const corsOptions = {
-  origin: ORIGIN,
-  optionsSuccessStatus: 200, // for some legacy browsers
+  origin: "*"
 };
 
 // configure express
